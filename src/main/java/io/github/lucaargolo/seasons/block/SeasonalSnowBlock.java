@@ -12,14 +12,37 @@ import net.minecraft.world.LightType;
 import java.util.Random;
 
 public class SeasonalSnowBlock extends SnowBlock {
-
     public SeasonalSnowBlock(Settings settings) {
         super(settings);
     }
 
+    private boolean sunlit(BlockState state, ServerWorld world, BlockPos pos) {
+        if (state.get(LAYERS) < 8) {
+            return world.getLightLevel(LightType.SKY, pos) > 0;
+        }
+        else {
+            if (world.getLightLevel(LightType.SKY, pos.up()) > 0) {
+                return true;
+            }
+            else if (world.getLightLevel(LightType.SKY, pos.south()) > 1) {
+                return true;
+            }
+            else if (world.getLightLevel(LightType.SKY, pos.east()) > 1) {
+                return true;
+            }
+            else if (world.getLightLevel(LightType.SKY, pos.north()) > 1) {
+                return true;
+            }
+            else if (world.getLightLevel(LightType.SKY, pos.west()) > 1) {
+                return true;
+            }
+            return world.getLightLevel(LightType.SKY, pos.down()) > 1;
+        }
+    }
+
     @Override
     public void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
-        if (world.getLightLevel(LightType.SKY, pos) > 0 && world.getBiome(pos).getTemperature(pos) >= 0.15F) {
+        if (sunlit(state, world, pos) && world.getBiome(pos).getTemperature(pos) >= 0.15F) {
             Block.dropStacks(state, world, pos);
             world.removeBlock(pos, false);
         }
